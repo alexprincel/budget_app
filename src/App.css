@@ -1,0 +1,93 @@
+html {
+	height: 100%;
+}
+
+body {
+	height: 100%;
+	margin: 0;
+	font-family: "arial";
+	font-size: 1em;
+}
+
+input {
+	font-family: "arial";
+	font-size: 1em;
+	border: none;
+}
+
+input[type=number] {
+	-moz-appearance:textfield;
+}
+
+.budget_grid {
+	padding: 10px;
+}
+
+.budget_item_line {
+	display: flex;
+	gap: 10px;
+	width: 60%;
+	margin: auto;
+}
+
+.budget_variance.positive {
+	color: green;
+}
+
+.budget_variance.negative {
+	color: red;
+}
+
+.budget_item_line > div {
+	flex: 0 0 calc(100%/4);
+}
+
+*[isvisible=true] {
+	display: block;
+}
+
+.add_budget_container > input {
+	background-color: #eeeeee;
+}
+
+*[isvisible=false] {
+	display: none;
+}
+
+.budget_item_budget {
+	background-color: #eeeeee;
+	border: 1px solid #dddddd;
+}
+
+.budget_item_name {
+	text-align: left;
+}
+
+.numeric_value {
+	text-align: right;
+}
+
+#page {
+	height: 100%;
+	display: flex;
+}
+
+#sidebar {
+	height: 100%;
+	background-color: pink;
+	min-width: 200px;
+}
+
+#header {
+	width: 100%;
+	margin: 0;
+	align-items: center;
+	display: flex;
+	background-color: green;
+}
+
+#sidebar ul {
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+}
