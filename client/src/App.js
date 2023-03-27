@@ -9,9 +9,14 @@ import Table from "react-bootstrap/Table";
 import Row from "react-bootstrap/Row";
 import "bootstrap/dist/css/bootstrap.min.css";
 import React from "react";
+import axios, * as others from "axios";
 
 function getMaxOfKey(dict_list, key) {
 	let maxValue = 0;
+	if (dict_list.length == 0) {
+		return 0;
+	}
+
 	for (const dict of dict_list) {
 		if (dict[key] > maxValue) {
 			maxValue = dict[key];
@@ -48,7 +53,12 @@ class BudgetLine extends React.Component {
 	render() {
 		return (
 			<tr>
-				<th className="budget_item_name">{this.props.item_name}</th>
+				<th
+					className="budget_item_name"
+					sort_order={this.props.sort_order}
+				>
+					{this.props.item_name}
+				</th>
 				<th>
 					<input
 						type="number"
@@ -78,68 +88,83 @@ class BudgetGrid extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
+			updated: false,
 			budget_add_item_visible: "false",
 			newLineItem: "",
-			budget_lines: [
-				{
-					budget_item_name: "Revenue",
-					budget_item_budget: "1250",
-					budget_item_real: "1150",
-					sort_order: 1,
-				},
-				{
-					budget_item_name: "Cat",
-					budget_item_budget: "100",
-					budget_item_real: "50",
-					sort_order: 2,
-				},
-				{
-					budget_item_name: "Mortgage",
-					budget_item_budget: "2000",
-					budget_item_real: "1000",
-					sort_order: 3,
-				},
-				{
-					budget_item_name: "Utilities",
-					budget_item_budget: "165",
-					budget_item_real: "150",
-					sort_order: 4,
-				},
-				{
-					budget_item_name: "Home Insurance",
-					budget_item_budget: "100",
-					budget_item_real: "95.8",
-					sort_order: 5,
-				},
-			],
+			budget_lines: [],
 		};
 
 		this.onBudgetItemAddClick = this.onBudgetItemAddClick.bind(this);
 		this.handleAddBudgetItem = this.handleAddBudgetItem.bind(this);
 	}
 
+	componentDidMount() {
+		console.log("componentDidMount");
+		if (!this.state.updated) {
+			axios
+				.get("http://localhost:3001")
+				.then((res) => {
+					const budget_data = res.data;
+					this.setState((prevState) => {
+						const list = [
+							{
+								budget_item_name: budget_data[0].line_name,
+								budget_item_budget:
+									budget_data[0].budget_amount.toString(),
+								budget_item_real: (budget_data[0]
+									.budget_item_real
+									? budget_data[0].budget_item_real
+									: 0
+								).toString(),
+								sort_order:
+									getMaxOfKey(prevState.budget_lines) + 1,
+							},
+						];
+
+						return {
+							...prevState,
+							budget_lines: list,
+							updated: true,
+						};
+					});
+				})
+				.catch((reason) => {
+					console.log("Tits");
+				});
+		}
+	}
+
+	componentDidUpdate() {}
+
 	handleAddBudgetItem(event) {
 		let newMaxSortOrder =
 			getMaxOfKey(this.state.budget_lines, "sort_order") + 1;
 		this.setState((state) => {
-			const list = state.budget_lines.concat({
-				budget_item_name: this.state.newLineItem,
-				budget_item_budget: "0",
-				budget_item_real: "0",
-				sort_order: newMaxSortOrder,
-			});
-			return { budget_lines: list, budget_add_item_visible: "false" };
+			const list = [
+				...this.state.budget_lines,
+				{
+					budget_item_name: this.state.newLineItem,
+					budget_item_budget: "0",
+					budget_item_real: "0",
+					sort_order: newMaxSortOrder,
+				},
+			];
+			return {
+				...this.state,
+				budget_lines: list,
+				budget_add_item_visible: "false",
+			};
 		});
 	}
 
-	onBudgetItemAddClick = () => {
+	onBudgetItemAddClick() {
 		this.setState({
 			budget_add_item_visible:
 				this.state.budget_add_item_visible === "true"
 					? "false"
 					: "true",
 		});
-	};
+	}
 
 	render() {
 		return (
@@ -211,24 +236,6 @@ function SideBar() {
 			</ul>
 		</div>
 	);
-}
-
-class PagePicker extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			picked_page: "summary",
-			page_visibility: {
-				summary: "true",
-				detailed: "false",
-				transactions: "false",
-			},
-		};
-	}
-
-	render() {
-		return <BudgetGrid />;
-	}
 }
 
 function App() {
